@@ -500,6 +500,7 @@ def plot_model_group(
     y_max_override: float | None = None,
     y_tick_step_override: float | None = None,
     legend_panel_indices: tuple[int, int] | None = None,
+    y_tick_start_override: float | None = None,
 ) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     strategies = [0, 1, 2, 3]
@@ -539,7 +540,8 @@ def plot_model_group(
                 if y_tick_step_override is not None
                 else 0.005 if y_max - y_min <= 0.05 else 0.02
             )
-            ax.set_yticks(np.arange(y_min, y_max + 1e-12, tick_step))
+            tick_start = y_min if y_tick_start_override is None else y_tick_start_override
+            ax.set_yticks(np.arange(tick_start, y_max + 1e-12, tick_step))
             ax.set_ylim(y_min, y_max)
         if model_index > 0:
             ax.spines["left"].set_visible(False)
@@ -631,6 +633,12 @@ def plot_summary(
         else:
             y_max_override = 0.943 if encoder == "semcse-cosine" else None
         y_tick_step_override = 0.05 if encoder == "semcse-null-percentile" else None
+        y_tick_start_override = None
+        if encoder == "gemini-embedding-2" and output_suffix == "physicochemical-descriptor":
+            y_min_override = 0.75
+            y_max_override = 0.85
+            y_tick_start_override = 0.76
+            y_tick_step_override = 0.02
         legend_panel_indices = (
             (0, 1)
             if encoder in {"biomedbert", "semcse-cosine", "semcse-null-percentile"}
@@ -649,6 +657,7 @@ def plot_summary(
                 y_max_override=y_max_override,
                 y_tick_step_override=y_tick_step_override,
                 legend_panel_indices=legend_panel_indices,
+                y_tick_start_override=y_tick_start_override,
             )
         )
     return paths
